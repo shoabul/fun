@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surprise Proposal</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@400;600&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            font-family: 'Poppins', sans-serif;
+            overflow: hidden;Cute White Cat
+            Ve Ve Ve ! ❤️
+            Raji thakle Yes chapun ❤️
+            
+        }
+
+        .card-container {
+            position: relative;
+            width: 320px;
+            height: 520px; /* Increased height for button */
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.3s;
+        }
+
+        /* The Hidden Content (Bottom Layer) */
+        .hidden-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #ffe6e6;
+            z-index: 1;
+            padding: 20px;
+            text-align: center;
+            transition: opacity 0.5s ease;
+        }
+
+        .cat-image {
+            width: 200px;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 6px solid #fff;
+            box-shadow: 0 8px 20px rgba(255, 105, 180, 0.2);
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .message {
+            font-family: 'Dancing Script', cursive;
+            font-size: 2.5rem;
+            color: #ff4757;
+            text-shadow: 2px 2px 0px rgba(255, 255, 255, 0.8);
+            margin-bottom: 15px;
+        }
+
+        /* The Yes Button */
+        .yes-btn {
+            background-color: #ff4757;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4);
+            transform: scale(0); /* Initially hidden */
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.27);
+        }
+
+        .yes-btn:hover {
+            background-color: #ff6b81;
+            transform: scale(1.05);
+        }
+
+        .yes-btn.show {
+            transform: scale(1);
+        }
+
+        /* Celebration Content (Happy State) */
+        .celebration-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #fff0f6; /* Slightly different pink */
+            z-index: 5;
+            padding: 20px;
+            text-align: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.8s ease;
+        }
+
+        .celebration-content.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Scratch Canvas */
+        #scratchCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            border-radius: 20px;
+            transition: opacity 0.8s ease;
+            touch-action: none;
+        }
+
+        /* Confetti Canvas */
+        #confettiCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Confetti Layer -->
+    <canvas id="confettiCanvas"></canvas>
+
+    <div class="card-container">
+        
+        <!-- Layer 1: The Proposal (Revealed after scratch) -->
+        <div class="hidden-content" id="proposalContent">
+            <!-- Normal Cute Cat -->
+            <img src="/cat_proposing.jpeg" alt="Cute White Cat" class="cat-image" onerror="this.src='https://placekitten.com/200/200'">
+            <h1 class="message">Ve Ve Ve ! ❤️</h1>
+            <!-- The Yes Button -->
+            <button class="yes-btn" id="yesBtn">Hea chapa chara ar kono option nai ❤️</button>
+        </div>
+
+        <!-- Layer 2: The Celebration (Revealed after Yes click) -->
+        <div class="celebration-content" id="celebrationContent">
+            <!-- Happy Excited Cat -->
+            <img src="/cat_happy.jpeg" alt="Happy Cat" class="cat-image" style="border-color: #ffda79;">
+            <h1 class="message">Yaaayyyy! 🎉</h1>
+            <p style="color: #555;">Ve Ve Ve toooo !</p>
+        </div>
+
+        <!-- Scratch Overlay -->
+        <canvas id="scratchCanvas"></canvas>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const canvas = document.getElementById('scratchCanvas');
+            const context = canvas.getContext('2d');
+            const container = document.querySelector('.card-container');
+            const yesBtn = document.getElementById('yesBtn');
+            const proposalContent = document.getElementById('proposalContent');
+            const celebrationContent = document.getElementById('celebrationContent');
+            
+            let isDrawing = false;
+            let revealed = false;
+
+            // --- Scratch Card Logic ---
+            function initCanvas() {
+                canvas.width = container.offsetWidth;
+                canvas.height = container.offsetHeight;
+
+                context.fillStyle = '#C0C0C0';
+                context.fillRect(0, 0, canvas.width, canvas.height);
+
+                context.fillStyle = '#555';
+                context.font = "bold 26px 'Poppins', sans-serif";
+                context.textAlign = "center";
+                context.textBaseline = "middle";
+                context.fillText("Scratch the Page ✨", canvas.width / 2, canvas.height / 2);
+                
+                context.font = "14px 'Poppins', sans-serif";
+                context.fillStyle = '#777';
+                context.fillText("(Swipe to reveal surprise)", canvas.width / 2, canvas.height / 2 + 35);
+                
+                context.globalCompositeOperation = 'source-over';
+            }
+
+            initCanvas();
+
+            function scratch(x, y) {
+                context.globalCompositeOperation = 'destination-out';
+                context.beginPath();
+                context.arc(x, y, 30, 0, Math.PI * 2, false); 
+                context.fill();
+            }
+
+            const getPos = (e) => {
+                const rect = canvas.getBoundingClientRect();
+                let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                let clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                return { x: clientX - rect.left, y: clientY - rect.top };
+            };
+
+            ['mousedown', 'touchstart'].forEach(evt => 
+                canvas.addEventListener(evt, (e) => {
+                    isDrawing = true;
+                    const pos = getPos(e);
+                    scratch(pos.x, pos.y);
+                    if(evt === 'touchstart') e.preventDefault();
+                }, {passive: false})
+            );
+
+            ['mousemove', 'touchmove'].forEach(evt => 
+                window.addEventListener(evt, (e) => {
+                    if (isDrawing) {
+                        // Check if scratching inside canvas bounds
+                        const rect = canvas.getBoundingClientRect();
+                        let cx = e.touches ? e.touches[0].clientX : e.clientX;
+                        let cy = e.touches ? e.touches[0].clientY : e.clientY;
+                        
+                        // Relative coordinates
+                        let x = cx - rect.left;
+                        let y = cy - rect.top;
+
+                        if(x >= 0 && x <= canvas.width && y >= 0 && y <= canvas.height) {
+                            scratch(x, y);
+                            if (!revealed) checkScratchPercentage();
+                        }
+                    }
+                }, {passive: false})
+            );
+
+            ['mouseup', 'touchend'].forEach(evt => 
+                window.addEventListener(evt, () => isDrawing = false)
+            );
+
+            function checkScratchPercentage() {
+                const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                const pixels = imageData.data;
+                let count = 0, clear = 0;
+                // Optimized pixel check
+                for (let i = 3; i < pixels.length; i += 40) { 
+                    count++;
+                    if (pixels[i] === 0) clear++;
+                }
+
+                if (count > 0 && (clear / count) > 0.4) { 
+                    revealed = true;
+                    canvas.classList.add('fade-out');
+                    // Show the Yes Button with a slight delay so they see the cat first
+                    setTimeout(() => {
+                        yesBtn.classList.add('show');
+                    }, 500);
+                }
+            }
+
+            // --- Yes Button Interaction ---
+            yesBtn.addEventListener('click', () => {
+                startConfetti();
+                // Fade out proposal, Fade in celebration
+                proposalContent.style.opacity = '0';
+                setTimeout(() => {
+                    celebrationContent.classList.add('active');
+                }, 300);
+            });
+
+
+            // --- Confetti Logic ---
+            const confettiCanvas = document.getElementById('confettiCanvas');
+            const ctx = confettiCanvas.getContext('2d');
+            let particles = [];
+
+            function resizeConfetti() {
+                confettiCanvas.width = window.innerWidth;
+                confettiCanvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resizeConfetti);
+            resizeConfetti();
+
+            function createParticle() {
+                return {
+                    x: Math.random() * confettiCanvas.width,
+                    y: Math.random() * confettiCanvas.height - confettiCanvas.height,
+                    color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+                    size: Math.random() * 10 + 5,
+                    speedY: Math.random() * 3 + 2,
+                    speedX: Math.random() * 4 - 2,
+                    rotation: Math.random() * 360,
+                    rotationSpeed: Math.random() * 10 - 5
+                };
+            }
+
+            function startConfetti() {
+                for(let i=0; i<150; i++) {
+                    particles.push(createParticle());
+                }
+                animateConfetti();
+            }
+
+            function animateConfetti() {
+                ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+                
+                particles.forEach((p, index) => {
+                    p.y += p.speedY;
+                    p.x += p.speedX;
+                    p.rotation += p.rotationSpeed;
+
+                    ctx.save();
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate(p.rotation * Math.PI / 180);
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size);
+                    ctx.restore();
+
+                    // Reset particle if it falls off screen for continuous effect (optional, here we let them fall)
+                    if (p.y > confettiCanvas.height) {
+                         // Stop recycling after some time if you want it to stop
+                         // For now, let's recycle a bit to make it last
+                         if(Math.random() > 0.95) {
+                             p.y = -20;
+                             p.x = Math.random() * confettiCanvas.width;
+                         }
+                    }
+                });
+
+                requestAnimationFrame(animateConfetti);
+            }
+        });
+    </script>
+</body>
+</html>
